@@ -17,7 +17,7 @@ An Open Source Rename Telegram RoBot
 
 ### You can also tap the Deploy To Heroku button below to deploy straight to Heroku!
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://www.heroku.com/deploy?template=https://github.com/abishikth-jos/RENAMER-BOT/tree/master)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://www.heroku.com/deploy?template=https://github.com/ufscrazybotz/UFSRename)
 
 ## Available BotFather commands
 
@@ -26,8 +26,8 @@ start - to check whether bot is alive
 help - to know how to use me
 about - to know about me
 donate - please donate me
-showthumb - shows you the permenantly saved thumbnail
-delthumb - to delete the saved thumbnail 
+showthumbnail - shows you the permenantly saved thumbnail
+clearthumbnail - to delete the saved thumbnail 
 ```
 
 #### The Hard Way
