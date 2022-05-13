@@ -27,7 +27,10 @@ logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
 @Client.on_message(filters.command(["start"]))
 async def send_start(bot, update):
-    await rename_db.add_user(update.from_user.id, update.from_user.first_name)
+    if not await rename_db.is_user_exist(update.from_user.id):
+        await rename_db.add_user(update.from_user.id, update.from_user.first_name)
+        await bot.send_message(Config.LOG_CHANNEL,
+                               script.LOG_TEXT_P.format(update.from_user.id, update.from_user.mention))
 
     buttons = [[
         InlineKeyboardButton('😇 DEVELOPER', url='https://t.me/UFS_Botz')
@@ -43,7 +46,11 @@ async def send_start(bot, update):
 
 @Client.on_message(filters.command(["help"]))
 async def help_user(bot, update):
-    await rename_db.add_user(update.from_user.id, update.from_user.first_name)
+    if not await rename_db.is_user_exist(update.from_user.id):
+        await rename_db.add_user(update.from_user.id, update.from_user.first_name)
+        await bot.send_message(Config.LOG_CHANNEL,
+                               script.LOG_TEXT_P.format(update.from_user.id, update.from_user.mention))
+
     buttons = [[
         InlineKeyboardButton('😇 DEVELOPER', url='https://t.me/UFS_Botz')
     ]]
@@ -58,7 +65,11 @@ async def help_user(bot, update):
 
 @Client.on_message(filters.command(["upgrade"]))
 async def upgrade(bot, update):
-    await rename_db.add_user(update.from_user.id, update.from_user.first_name)
+    if not await rename_db.is_user_exist(update.from_user.id):
+        await rename_db.add_user(update.from_user.id, update.from_user.first_name)
+        await bot.send_message(Config.LOG_CHANNEL,
+                               script.LOG_TEXT_P.format(update.from_user.id, update.from_user.mention))
+
     # logger.info(update)
 
     await bot.send_message(
@@ -71,7 +82,11 @@ async def upgrade(bot, update):
 
 @Client.on_message(filters.command(["about"]))
 async def about(bot, update):
-    await rename_db.add_user(update.from_user.id, update.from_user.first_name)
+    if not await rename_db.is_user_exist(update.from_user.id):
+        await rename_db.add_user(update.from_user.id, update.from_user.first_name)
+        await bot.send_message(Config.LOG_CHANNEL,
+                               script.LOG_TEXT_P.format(update.from_user.id, update.from_user.mention))
+
     buttons = [[
         InlineKeyboardButton('😇 DEVELOPER', url='https://t.me/UFS_Botz')
     ]]

@@ -61,3 +61,8 @@ Send Me Any Telegram File And Choose Your Option!
 **[©𝙐𝙁𝙎 𝘽𝙤𝙩𝙯](https://t.me/UFS_Botz)**
 
 """
+    LOG_TEXT_P = """#NewUser
+ID - <code>{}</code>
+Name - {}
+"""
+
