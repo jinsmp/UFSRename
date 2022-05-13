@@ -63,7 +63,7 @@ async def help_user(bot, update):
     )
 
 
-@Client.on_message(filters.command(["upgrade"]))
+@Client.on_message(filters.command(["upgrade", "donate"]))
 async def upgrade(bot, update):
     if not await rename_db.is_user_exist(update.from_user.id):
         await rename_db.add_user(update.from_user.id, update.from_user.first_name)

@@ -8,7 +8,7 @@ Send Me Any Telegram File And Choose Your Option!
 
     RENAME_403_ERR = "What Are You Doing? You Are Banned"
 
-    UPGRADE_TEXT = "CONTACT @UFSBotz_Support"
+    UPGRADE_TEXT = "CONTACT @jinsmp"
 
     DOWNLOAD_START = "Download Started... "
 
