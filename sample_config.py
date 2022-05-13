@@ -21,7 +21,7 @@ class Config(object):
     AUTH_USERS = [int(admin) if id_pattern.search(admin) else admin for admin in os.environ.get('AUTH_USERS', '').split()]
     # the download location, where the HTTP Server runs
     DOWNLOAD_LOCATION = "./DOWNLOADS"
-    LOG_CHANNEL = os.environ.get("LOG_CHANNEL", "-1001699085090")
+    USER_LOG_CHANNEL = os.environ.get("LOG_CHANNEL", "-1001699085090")
     OWNER_ID = int(os.environ.get("OWNER_ID", "1636552877"))
     AUTH_USERS = (AUTH_USERS + ADMINS) if AUTH_USERS else []
 

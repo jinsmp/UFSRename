@@ -69,9 +69,9 @@ async def rename_doc(bot, message, default):
     try:
         actual_name = filetype.file_name
         file_name = filetype.file_name
-        splitit = file_name.split(".")
-        file_name = splitit[0]
-        extension = (splitit[-1])
+        # splitit = file_name.split(".")
+        file_name = file_name[0:-4]
+        extension = (file_name[-3])
     except:
         extension = "mkv"
 
@@ -110,11 +110,6 @@ async def rename_doc(bot, message, default):
             try:
                 await sendmsg.edit_text(
                     text=script.SAVED_RECVD_DOC_FILE)
-                # await bot.edit_message_text(
-                #     text=script.SAVED_RECVD_DOC_FILE,
-                #     chat_id=message.chat.id,
-                #     message_id=sendmsg.id
-                # )
             except:
                 await sendmsg.delete()
                 sendmsg = await message.reply_text(script.SAVED_RECVD_DOC_FILE, quote=True)
@@ -125,12 +120,6 @@ async def rename_doc(bot, message, default):
                 await sendmsg.edit_text(
                     text="**Status :** `Upload Starting 📤`\n\n**• FileName :** `{}`".format(file_name + "." + extension)
                 )
-
-                # message_for_progress_display = await bot.edit_message_text(
-                #     text="**Status :** `Upload Starting 📤`\n\n**• FileName :** `{}`".format(file_name + "." + extension),
-                #     chat_id=message.chat.id,
-                #     message_id=sendmsg.id
-                # )
             except Exception as e:
                 await sendmsg.delete()
                 sendmsg = await message.reply_text(script.UPLOAD_START, quote=True)
@@ -140,8 +129,6 @@ async def rename_doc(bot, message, default):
             if not os.path.exists(thumb_image_path):
                 mes = await rename_db.get_thumb(message.from_user.id)
                 if mes != None:
-                    # m = await bot.get_messages(message.chat.id, mes.msg_id)
-                    # await m.download(file_name=thumb_image_path)
                     await bot.download_media(message=mes, file_name=thumb_image_path)
                     thumb_image_path = thumb_image_path
                 else:
@@ -202,12 +189,12 @@ async def rename_doc(bot, message, default):
                            f"<code>[{media.from_user.id}]</code> "
                 caption = FRM_USER if not sent_message.caption else sent_message.caption.html + "\n\n" + FRM_USER
                 try:
-                    channel = await bot.get_chat(Config.LOG_CHANNEL)
+                    channel = await bot.get_chat(Config.USER_LOG_CHANNEL)
                     chat_name = channel.title if channel.type != 'private' else channel.first_name
                     if chat_name:
-                        await sent_message.copy(chat_id=Config.LOG_CHANNEL, caption=caption)
+                        await sent_message.copy(chat_id=Config.USER_LOG_CHANNEL, caption=caption)
                 except Exception as e:
-                    await sent_message.copy(chat_id=Config.OWNER_ID, caption=caption)
+                    await sent_message.copy(chat_id=Config.USER_LOG_CHANNEL, caption=caption)
 
 
     else:
