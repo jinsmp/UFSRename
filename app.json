@@ -1,5 +1,5 @@
 {
-  "name": "RENAMER-BOT",
+  "name": "UFS Rename Pro Bot",
   "description": "Telegram's best Open Source Rename Bot with perm thumbnail support. Create your Fork now.",
   "keywords": [
     "telegram",
@@ -8,9 +8,6 @@
     "source",
     "Rename"
   ],
-  "success_url": "https://github.com/Hillard-har/RENAMER-BOT",
-  "website": "https://github.com/Ts-Bots",
-  "repository": "https://github.com/Hillard-har/RENAMER-BOT",
   "env": {
     "WEBHOOK": {
       "description": "Setting this to ANYTHING will enable webhooks when in env mode",
@@ -28,12 +25,12 @@
       "description": "Get this value from https://my.telegram.org",
       "value": ""
     },
+    "DATABASE_URL": {
+      "description": "mongoDB URI. Get this value from https://www.mongodb.com. For more help watch this video - https://youtu.be/dsuTn4qV2GA",
+      "required": true
+    },
     "AUTH_USERS": {
       "description": "allow only pre-defined users to use this bot",
-      "value": ""
-    },
-    "BANNED_USERS": {
-      "description": "Banned Unwanted members..",
       "value": "",
       "required": false
     }
