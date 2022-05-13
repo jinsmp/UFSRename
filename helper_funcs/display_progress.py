@@ -1,25 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# (c) Hillard-har
+# (c) Jins Mathew
+
+
+import os
+import math
+import time
+import logging
 
 # the logging things
-import logging
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-
-import math
-import os
-import time
-
-# the secret configuration specific things
-if bool(os.environ.get("WEBHOOK", False)):
-    from sample_config import Config
-else:
-    from config import Config
-
-# the Strings used for this "thing"
-#from translation import Translation
 
 
 async def progress_for_pyrogram(
@@ -43,8 +34,8 @@ async def progress_for_pyrogram(
         estimated_total_time = TimeFormatter(milliseconds=estimated_total_time)
 
         progress = "\n( {0}{1} ) **{2}%**\n\n".format(
-            ''.join(["━" for i in range(math.floor(percentage / 10))]),
-            ''.join(["─" for i in range(10 - math.floor(percentage / 10))]),
+            ''.join(["◉" for i in range(math.floor(percentage / 10))]),
+            ''.join(["◎" for i in range(10 - math.floor(percentage / 10))]),
            round(percentage, 2))
 
         tmp = progress + "**✅ ғɪɴɪsʜᴇᴅ : {0}**\n\n**💽 ᴛᴏᴛᴀʟ sɪᴢᴇ : {1}**\n\n**🚀 sᴘᴇᴇᴅ: {2}/s**\n\n**⏰ ᴇsᴛɪᴍᴀᴛᴇᴅ ᴛɪᴍᴇ : {3}**\n".format(

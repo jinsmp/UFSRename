@@ -1,113 +1,120 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# (c) Hillard-har | Ts-Bots 
-
-import logging
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-logging.getLogger("pyrogram").setLevel(logging.WARNING)
+# (c) Jins Mathew | UFSBotz
 
 import os
 import time
 import asyncio
+import logging
 import pyrogram
 
-if bool(os.environ.get("WEBHOOK", False)):
-    from sample_config import Config
-else:
-    from config import Config
+from PIL import Image
+from pyrogram.errors import FloodWait
 
+from helper_funcs.progress import Progress
 from script import script
-
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ForceReply
-
+from database.ufs_db import rename_db
+from pyrogram.types import ForceReply
+from hachoir.parser import createParser
+from hachoir.metadata import extractMetadata
 from helper_funcs.display_progress import progress_for_pyrogram
 
-from hachoir.metadata import extractMetadata
-from hachoir.parser import createParser
+if bool(os.environ.get("WEBHOOK", False)):
+    from sample_config import Config, temp
+else:
+    from config import Config, temp
 
-from PIL import Image
-from database.database import *
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
 
 async def force_name(bot, message):
-
     await bot.send_message(
         message.reply_to_message.from_user.id,
-        "Enter new name for media\n\nNote : Extension not required",
-        reply_to_message_id=message.reply_to_message.message_id,
+        "**Enter New Name For Your Media.\n\nNote :-** `Extension Not Required`",
+        reply_to_message_id=message.reply_to_message.id,
         reply_markup=ForceReply(True)
     )
 
 
 @Client.on_message(filters.private & filters.reply & filters.text)
 async def cus_name(bot, message):
-    
-    if (message.reply_to_message.reply_markup) and isinstance(message.reply_to_message.reply_markup, ForceReply):
-        asyncio.create_task(rename_doc(bot, message))     
+    if message.reply_to_message.reply_markup and isinstance(message.reply_to_message.reply_markup, ForceReply):
+        asyncio.create_task(rename_doc(bot, message, False))
     else:
-        print('No media present')
+        print('No Media Present')
 
-    
-async def rename_doc(bot, message):
-    
-    mssg = await bot.get_messages(
+
+async def rename_doc(bot, message, default):
+    global file_name, actual_name
+    media = await bot.get_messages(
         message.chat.id,
-        message.reply_to_message.message_id
-    )    
-    
-    media = mssg.reply_to_message
+        message.reply_to_message.id
+    )
 
-    
+    if not default:
+        await bot.delete_messages(
+            chat_id=message.chat.id,
+            message_ids=message.reply_to_message.id
+        )
+        media = media.reply_to_message
+
     if media.empty:
-        await message.reply_text('Why did you delete that 😕', True)
+        await message.reply_text('Why Did You Delete That 😕', True)
         return
-        
+
     filetype = media.document or media.video or media.audio or media.voice or media.video_note
     try:
-        actualname = filetype.file_name
-        splitit = actualname.split(".")
+        actual_name = filetype.file_name
+        file_name = filetype.file_name
+        splitit = file_name.split(".")
+        file_name = splitit[0]
         extension = (splitit[-1])
     except:
         extension = "mkv"
 
     await bot.delete_messages(
         chat_id=message.chat.id,
-        message_ids=message.reply_to_message.message_id,
+        message_ids=message.id,
         revoke=True
     )
-    
-    if message.from_user.id not in Config.BANNED_USERS:
-        file_name = message.text
+
+    BANNED_USERS = await rename_db.get_banned()
+
+    if message.reply_to_message.from_user.id not in BANNED_USERS:
+        if not default:
+            file_name = message.text
         description = script.CUSTOM_CAPTION_UL_FILE.format(newname=file_name)
         download_location = Config.DOWNLOAD_LOCATION + "/"
 
         sendmsg = await bot.send_message(
             chat_id=message.chat.id,
             text=script.DOWNLOAD_START,
-            reply_to_message_id=message.message_id
+            reply_to_message_id=media.id
         )
-        
+
         c_time = time.time()
         the_real_download_location = await bot.download_media(
             message=media,
             file_name=download_location,
             progress=progress_for_pyrogram,
             progress_args=(
-                script.DOWNLOAD_START,
+                "**Status :** `Download Starting 📥`\n\n**• FileName :** `{}`".format(actual_name),
                 sendmsg,
                 c_time
             )
         )
         if the_real_download_location is not None:
             try:
-                await bot.edit_message_text(
-                    text=script.SAVED_RECVD_DOC_FILE,
-                    chat_id=message.chat.id,
-                    message_id=sendmsg.message_id
-                )
+                await sendmsg.edit_text(
+                    text=script.SAVED_RECVD_DOC_FILE)
+                # await bot.edit_message_text(
+                #     text=script.SAVED_RECVD_DOC_FILE,
+                #     chat_id=message.chat.id,
+                #     message_id=sendmsg.id
+                # )
             except:
                 await sendmsg.delete()
                 sendmsg = await message.reply_text(script.SAVED_RECVD_DOC_FILE, quote=True)
@@ -115,25 +122,30 @@ async def rename_doc(bot, message):
             new_file_name = download_location + file_name + "." + extension
             os.rename(the_real_download_location, new_file_name)
             try:
-                await bot.edit_message_text(
-                    text=script.UPLOAD_START,
-                    chat_id=message.chat.id,
-                    message_id=sendmsg.message_id
-                    )
-            except:
+                await sendmsg.edit_text(
+                    text="**Status :** `Upload Starting 📤`\n\n**• FileName :** `{}`".format(file_name + "." + extension)
+                )
+
+                # message_for_progress_display = await bot.edit_message_text(
+                #     text="**Status :** `Upload Starting 📤`\n\n**• FileName :** `{}`".format(file_name + "." + extension),
+                #     chat_id=message.chat.id,
+                #     message_id=sendmsg.id
+                # )
+            except Exception as e:
                 await sendmsg.delete()
                 sendmsg = await message.reply_text(script.UPLOAD_START, quote=True)
             # logger.info(the_real_download_location)
 
-            thumb_image_path = download_location + str(message.from_user.id) + ".jpg"
+            thumb_image_path = download_location + str(media.from_user.id) + ".jpg"
             if not os.path.exists(thumb_image_path):
-                mes = await thumb(message.from_user.id)
+                mes = await rename_db.get_thumb(message.from_user.id)
                 if mes != None:
-                    m = await bot.get_messages(message.chat.id, mes.msg_id)
-                    await m.download(file_name=thumb_image_path)
+                    # m = await bot.get_messages(message.chat.id, mes.msg_id)
+                    # await m.download(file_name=thumb_image_path)
+                    await bot.download_media(message=mes, file_name=thumb_image_path)
                     thumb_image_path = thumb_image_path
                 else:
-                    thumb_image_path = None                    
+                    thumb_image_path = None
             else:
                 width = 0
                 height = 0
@@ -148,46 +160,59 @@ async def rename_doc(bot, message):
                 img.save(thumb_image_path, "JPEG")
 
             c_time = time.time()
-            await bot.send_document(
+            prog = Progress(media.from_user.id, bot, sendmsg)
+            sent_message = await bot.send_document(
                 chat_id=message.chat.id,
                 document=new_file_name,
                 thumb=thumb_image_path,
                 caption=description,
                 # reply_markup=reply_markup,
-                reply_to_message_id=message.reply_to_message.message_id,
-                progress=progress_for_pyrogram,
+                reply_to_message_id=media.id,
+                progress=prog.progress_for_pyrogram,
                 progress_args=(
-                    script.UPLOAD_START,
-                    sendmsg, 
-                    c_time
+                    f"**• Uploading 📤 :** `{file_name }.{extension}`",
+                    c_time,
                 )
             )
-
-            try:
-                os.remove(new_file_name)
-            except:
-                pass                 
-            try:
+            if message.id != sendmsg.id:
+                try:
+                    await sendmsg.delete()
+                except FloodWait as gf:
+                    time.sleep(gf.x)
+                except Exception as rr:
+                    logging.warning(str(rr))
+            os.remove(new_file_name)
+            if thumb_image_path is not None:
                 os.remove(thumb_image_path)
-            except:
-                pass  
-            try:
-                await bot.edit_message_text(
-                    text=script.AFTER_SUCCESSFUL_UPLOAD_MSG,
-                    chat_id=message.chat.id,
-                    message_id=sendmsg.message_id,
-                    disable_web_page_preview=True
-                )
-            except:
-                await sendmsg.delete()
-                await message.reply_text(script.AFTER_SUCCESSFUL_UPLOAD_MSG, quote=True)
-                
+
+            if media.from_user.id not in Config.ADMINS:
+                try:
+                    await bot.edit_message_text(
+                        text=script.AFTER_SUCCESSFUL_UPLOAD_MSG,
+                        chat_id=message.chat.id,
+                        message_id=sendmsg.id,
+                        disable_web_page_preview=True
+                    )
+                except:
+                    await sendmsg.delete()
+                    await message.reply_text(script.AFTER_SUCCESSFUL_UPLOAD_MSG, quote=True)
+
+            if not media.from_user.id in Config.AUTH_USERS:
+                FRM_USER = f"By User <b>[<a href='tg://user?id={media.from_user.id}'>{media.from_user.first_name}</a>]</b>" \
+                           f"<code>[{media.from_user.id}]</code> "
+                caption = FRM_USER if not sent_message.caption else sent_message.caption.html + "\n\n" + FRM_USER
+                try:
+                    channel = await bot.get_chat(Config.LOG_CHANNEL)
+                    chat_name = channel.title if channel.type != 'private' else channel.first_name
+                    if chat_name:
+                        await sent_message.copy(chat_id=Config.LOG_CHANNEL, caption=caption)
+                except Exception as e:
+                    await sent_message.copy(chat_id=Config.OWNER_ID, caption=caption)
+
+
     else:
         await bot.send_message(
             chat_id=message.chat.id,
             text="You're B A N N E D",
-            reply_to_message_id=message.message_id
+            reply_to_message_id=message.id
         )
-
-
-

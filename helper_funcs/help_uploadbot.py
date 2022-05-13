@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# (c) Hillard-har 
-
-# the logging things
-import logging
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+# (c) Jins Mathew
 
 import os
+import time
+import logging
 import requests
+
+from helper_funcs.display_progress import humanbytes
+
+# the logging things
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 
 def DetectFileSize(url):
     r = requests.get(url, allow_redirects=True, stream=True)

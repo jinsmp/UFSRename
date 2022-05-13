@@ -1,108 +1,136 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# (c) Hillard-har | @Trackstudio | Ts-Bots | prgofficial 
+# (c) Jins Mathew | @UFS_Botz | UFSBotz | @UFSBotz_Support
 
-import logging
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-logging.getLogger("pyrogram").setLevel(logging.WARNING)
-
-import time
 import os
-import sqlite3
-import asyncio
+import sys
+import random
+import logging
+import pyrogram
+import subprocess
+
+from script import script
+from pyrogram import Client, filters
+from database.ufs_db import rename_db
+from database.restart_db import start_restart_stage
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 if bool(os.environ.get("WEBHOOK", False)):
     from sample_config import Config
 else:
     from config import Config
 
-from script import script
-
-import pyrogram
-
-from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ForceReply
-from pyrogram.errors import UserNotParticipant
-
-from plugins.rename_file import rename_doc
-
-
-@Client.on_message(filters.command(["help"]))
-def help_user(bot, update):
-    bot.send_message(
-        chat_id=update.chat.id,
-        text=script.HELP_USER,
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text="😇 DEVELOPER", url="https://t.me/Trackstudio")]]),
-        parse_mode="html",
-        disable_web_page_preview=True,
-        reply_to_message_id=update.message_id
-    )
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
 
 @Client.on_message(filters.command(["start"]))
-def send_start(bot, update):
-    # logger.info(update)
-    
-    bot.send_message(
-        chat_id=update.chat.id,
-        text=script.START_TEXT.format(update.from_user.first_name),
-        parse_mode="markdown",
-        disable_web_page_preview=True,
-        reply_to_message_id=update.message_id, 
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text="😇 DEVELOPER", url="https://t.me/Trackstudio")]])
+async def send_start(bot, update):
+    await rename_db.add_user(update.from_user.id, update.from_user.first_name)
+
+    buttons = [[
+        InlineKeyboardButton('😇 DEVELOPER', url='https://t.me/UFS_Botz')
+    ]]
+    reply_markup = InlineKeyboardMarkup(buttons)
+    await update.reply_photo(
+        photo=random.choice(Config.PICS),
+        caption=script.START_TEXT.format(update.from_user.first_name),
+        reply_to_message_id=update.id,
+        reply_markup=reply_markup
+    )
+
+
+@Client.on_message(filters.command(["help"]))
+async def help_user(bot, update):
+    await rename_db.add_user(update.from_user.id, update.from_user.first_name)
+    buttons = [[
+        InlineKeyboardButton('😇 DEVELOPER', url='https://t.me/UFS_Botz')
+    ]]
+    reply_markup = InlineKeyboardMarkup(buttons)
+    await update.reply_photo(
+        photo=random.choice(Config.PICS),
+        caption=script.HELP_USER,
+        reply_to_message_id=update.id,
+        reply_markup=reply_markup
     )
 
 
 @Client.on_message(filters.command(["upgrade"]))
-def upgrade(bot, update):
+async def upgrade(bot, update):
+    await rename_db.add_user(update.from_user.id, update.from_user.first_name)
     # logger.info(update)
 
-    bot.send_message(
+    await bot.send_message(
         chat_id=update.chat.id,
         text=script.UPGRADE_TEXT,
-        parse_mode="html",
-        reply_to_message_id=update.message_id,
+        reply_to_message_id=update.id,
         disable_web_page_preview=True
     )
 
-@pyrogram.Client.on_message(filters.command(["about"]))
+
+@Client.on_message(filters.command(["about"]))
 async def about(bot, update):
-    await bot.send_message(
-        chat_id=update.chat.id,
-        text=script.ABOUT_TEXT,
-        parse_mode="markdown",
-        reply_to_message_id=update.message_id, 
-        disable_web_page_preview = True, 
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text="😇 DEVELOPER", url="https://t.me/Trackstudio")]])  
+    await rename_db.add_user(update.from_user.id, update.from_user.first_name)
+    buttons = [[
+        InlineKeyboardButton('😇 DEVELOPER', url='https://t.me/UFS_Botz')
+    ]]
+    reply_markup = InlineKeyboardMarkup(buttons)
+    await update.reply_photo(
+        photo=random.choice(Config.PICS),
+        caption=script.ABOUT_TEXT,
+        reply_to_message_id=update.id,
+        reply_markup=reply_markup
     )
 
 
-    
-@Client.on_message(filters.private & (filters.document | filters.video | filters.audio | filters.voice | filters.video_note))
+@Client.on_message(filters.command("update") & filters.user(Config.ADMINS))
+async def update_restart(bot, message):
+    try:
+        out = subprocess.check_output(["git", "pull"]).decode("UTF-8")
+        if "Already up to date." in str(out):
+            return await message.reply_text("Its Already Up-To Date!")
+        await message.reply_text(f"```{out}```")
+    except Exception as e:
+        return await message.reply_text(str(e))
+    m = await message.reply_text(
+        "**Updated With Default Branch, Restarting Now.**")
+    await restart(m)
+
+
+async def restart(message):
+    if message:
+        await start_restart_stage(message.chat.id, message.id)
+    os.execvp(sys.executable, [sys.executable, "main.py"])
+
+
+@Client.on_message(
+    filters.private & (filters.document | filters.video | filters.audio | filters.voice | filters.video_note))
 async def rename_cb(bot, update):
- 
     file = update.document or update.video or update.audio or update.voice or update.video_note
     try:
         filename = file.file_name
     except:
         filename = "Not Available"
-    
+
+    buttons = [[
+        InlineKeyboardButton('🔖 Default', callback_data="default"),
+        InlineKeyboardButton('✒ Rename', callback_data="rename_button")
+    ], [
+        InlineKeyboardButton('⛔ Cancel', callback_data='cancel_e')
+    ]]
+    reply_markup = InlineKeyboardMarkup(buttons)
+
     await bot.send_message(
         chat_id=update.chat.id,
-        text="<b>File Name</b> : <code>{}</code> \n\nSelect the desired option below 😇".format(filename),
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text="📝 RENAME", callback_data="rename_button")],
-                                                [InlineKeyboardButton(text="⛔ CANCEL", callback_data="cancel_e")]]),
-        parse_mode="html",
-        reply_to_message_id=update.message_id,
-        disable_web_page_preview=True   
-    )   
+        text="<b>File Name</b> : <code>{}</code> \n\nSelect The Desired Option Below 😇".format(filename),
+        reply_markup=reply_markup,
+        reply_to_message_id=update.id,
+        disable_web_page_preview=True
+    )
 
 
 async def cancel_extract(bot, update):
-    
-    await bot.send_message(
-        chat_id=update.chat.id,
-        text="Process Cancelled 🙃",
+    await update.reply_to_message.reply_text(
+        text="**Process Cancelled 🙃**", quote=True
     )

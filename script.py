@@ -1,66 +1,63 @@
 class script(object):
+    START_TEXT = """**Hai {}**,\n 
+I Am A Power Full File Rename Bot With  Permanent Thumbnail Support.
 
-
-    START_TEXT = """** Hai {}** , 
-
-I am a Simple File Renamer Bot with  Permanent Thumbnail support
-
-Send me any Telegram file and choose appropriate option!
+Send Me Any Telegram File And Choose Your Option!
 
 """
 
-    RENAME_403_ERR = "What Are You Doing? You are Banned"
+    RENAME_403_ERR = "What Are You Doing? You Are Banned"
 
-    UPGRADE_TEXT = "CONTACT @Ts_Bots"
+    UPGRADE_TEXT = "CONTACT @UFSBotz_Support"
 
     DOWNLOAD_START = "Download Started... "
 
     UPLOAD_START = "Uploading Started... "
 
-    AFTER_SUCCESSFUL_UPLOAD_MSG = "**Thank you for Using Me > ©  @Ts_Bots**"
+    AFTER_SUCCESSFUL_UPLOAD_MSG = "**Thank You for Using Me -->> [©𝙐𝙁𝙎 𝘽𝙤𝙩𝙯](https://t.me/UFS_Botz)**"
 
     SAVED_THUMB = "Thumbnail Saved ✅ This Is Permanent"
 
-    DEL_THUMB = "Thumbnail cleared succesfully!"
+    FAILED_THUMB = "⚠ Cannot Be Save Thumbnail!"
 
-    NO_THUMB = "No thumbnails found!"
+    DEL_THUMB = "Thumbnail Cleared Successfully!"
+
+    NO_THUMB = "No Thumbnails Found!"
 
     SAVED_RECVD_DOC_FILE = "File Downloaded Successfully 😎"
 
-    CUSTOM_CAPTION_UL_FILE = "@Ts_Bots"
+    CUSTOM_CAPTION_UL_FILE = "`{newname}`\n\n💫 ℙ𝕠𝕨𝕖𝕣𝕖𝕕 𝔹𝕪 : **𝙐𝙁𝙎 𝘽𝙤𝙩𝙯**"
 
     HELP_USER = """
 
-<b>It's not that complicated😅</b>
+<b>It's Not That Complicated😅</b>
     
-1. Send me a custom thumbnail (Optional) 
+1. Send Me A Custom Thumbnail (Optional) 
 
-2. Send the file to be renamed
+2. Send The File To Be Renamed
 
-3. Choose appropriate option
+3. Choose Your Option
 
-4. Send the new file when bot asks 
+4. Send The New File Name Without Extension If You Want To Rename
 
 
-<b>By @Ts_Bots</b>
+<b>By [𝙐𝙁𝙎 𝘽𝙤𝙩𝙯](https://t.me/UFS_Botz)</b>
 """
 
     ABOUT_TEXT = """
 
-**About Me**
+**Aʙᴏᴜᴛ Mᴇ**
 
-○ ᴍʏ ɴᴀᴍᴇ : 𝚁𝙴𝙽𝙰𝙼𝙴𝚁 | Clone
+➲  Mʏ Nᴀᴍᴇ : Rᴇɴᴀᴍᴇ Pʀᴏ
 
-○ ʟᴀɴɢᴜᴀɢᴇ : ᴘʏᴛʜᴏɴ 
+➲  Lᴀɴɢᴜᴀɢᴇ : Pʏᴛʜᴏɴ 
 
-○ ғʀᴀᴍᴇᴡᴏʀᴋ : ᴘʏʀᴏɢʀᴀᴍ 
+➲  Fʀᴀᴍᴇᴡᴏʀᴋ : Pʏʀᴏɢʀᴀᴍ 
 
-○ sᴇʀᴠᴇʀ : ʜᴇʀᴏᴋᴜ 
+➲  Sᴇʀᴠᴇʀ : Hᴇʀᴏᴋᴜ 
 
-○ sᴏᴜʀᴄᴇ ᴄᴏᴅᴇ : [ᴛᴏᴜᴄʜ ʜᴇʀᴇ](https://github.com/Hillard-har/RENAMER-BOT) 
+➲  Cʀᴇᴀᴛᴏʀ : [UFS Botz](https://t.me/UFSBotz_Support)
 
-○ ᴄʀᴇᴀᴛᴏʀ : [@Ts_Bots](https://t.me/ts_bots)
-
-**[©️ ᴛʀᴀᴄᴋsᴛᴜᴅɪᴏ's ʙᴏᴛs](https://t.me/Ts_bots)**
+**[©𝙐𝙁𝙎 𝘽𝙤𝙩𝙯](https://t.me/UFS_Botz)**
 
 """
