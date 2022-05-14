@@ -128,9 +128,9 @@ async def rename_doc(bot, message, default):
                 # logger.info(the_real_download_location)
 
                 thumb_image_path = download_location + str(media.from_user.id) + ".jpg"
-                d_thumb = await rename_db.get_thumb(media.from_user.id)
+                # d_thumb = await rename_db.get_thumb(media.from_user.id)
                 if not os.path.exists(thumb_image_path):
-                    d_thumb = await rename_db.get_thumb(media.from_user.id)
+                    # d_thumb = await rename_db.get_thumb(media.from_user.id)
                     mes = await rename_db.get_thumb(media.from_user.id)
                     if mes != None:
                         await bot.download_media(message=mes, file_name=thumb_image_path)
@@ -155,7 +155,7 @@ async def rename_doc(bot, message, default):
                 sent_message = await bot.send_document(
                     chat_id=message.chat.id,
                     document=new_file_name,
-                    thumb=d_thumb,
+                    thumb=thumb_image_path,
                     caption=description,
                     # reply_markup=reply_markup,
                     reply_to_message_id=media.id,
@@ -208,4 +208,4 @@ async def rename_doc(bot, message, default):
                 reply_to_message_id=message.id
             )
     except Exception as e:
-        await bot.Bot.send_message(bot, Config.LOG_CHANNEL, str(e))
+        await bot.send_message(bot, Config.LOG_CHANNEL, str(e))
