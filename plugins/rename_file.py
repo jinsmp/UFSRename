@@ -48,6 +48,8 @@ async def cus_name(bot, message):
 
 
 async def rename_doc(bot, message, default):
+    actual_name = None
+    file_name = None
     media = await bot.get_messages(
         message.chat.id,
         message.reply_to_message.id
