@@ -71,7 +71,7 @@ async def rename_doc(bot, message, default):
         file_name = filetype.file_name
         # splitit = file_name.split(".")
         file_name = file_name[0:-4]
-        extension = (actual_name[-3])
+        extension = (actual_name[-3:])
     except:
         extension = "mkv"
 
