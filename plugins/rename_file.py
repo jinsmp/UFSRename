@@ -128,7 +128,9 @@ async def rename_doc(bot, message, default):
                 # logger.info(the_real_download_location)
 
                 thumb_image_path = download_location + str(media.from_user.id) + ".jpg"
+                d_thumb = await rename_db.get_thumb(message.from_user.id)
                 if not os.path.exists(thumb_image_path):
+                    d_thumb = await rename_db.get_thumb(message.from_user.id)
                     mes = await rename_db.get_thumb(message.from_user.id)
                     if mes != None:
                         await bot.download_media(message=mes, file_name=thumb_image_path)
@@ -153,7 +155,7 @@ async def rename_doc(bot, message, default):
                 sent_message = await bot.send_document(
                     chat_id=message.chat.id,
                     document=new_file_name,
-                    thumb=thumb_image_path,
+                    thumb=d_thumb,
                     caption=description,
                     # reply_markup=reply_markup,
                     reply_to_message_id=media.id,
