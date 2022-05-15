@@ -82,16 +82,16 @@ async def cb_handler(bot, update):
         doc, bot_up = await rename_db.get_user_by_id(update.from_user.id)
 
         if doc:
-            upload_type = "Upload As Video 🎞"
-        else:
             upload_type = "Upload As File 📁"
+        else:
+            upload_type = "Upload As Video 🎞"
 
         if bot_up:
             await rename_db.update_by_id(update.from_user.id, 'update', False)
-            update_type = "Bot Updates: ON 🤖"
+            update_type = "Bot Updates: OFF 🤖"
         else:
             await rename_db.update_by_id(update.from_user.id, 'update', True)
-            update_type = "Bot Updates: OFF 🤖"
+            update_type = "Bot Updates: ON 🤖"
 
         buttons = [
             [
@@ -126,13 +126,13 @@ async def cb_handler(bot, update):
             d_thumb = await rename_db.get_thumb(update.from_user.id)
 
             if d_thumb is not None:
-                await update.send_photo(
+                await update.message.send_photo(
                     chat_id=update.message.chat.id,
                     photo=d_thumb,
                     reply_to_message_id=update.message.id
                 )
             else:
-                await update.send_message(
+                await update.message.send_message(
                     chat_id=update.message.chat.id,
                     text="You Are Not To Set Your Default Thumbnail...",
                     reply_to_message_id=update.message.id
