@@ -119,6 +119,82 @@ async def restart(message):
     os.execvp(sys.executable, [sys.executable, "main.py"])
 
 
+@Client.on_message(filters.command("dbupdate") & filters.user(Config.ADMINS))
+async def db_update_all(bot, message):
+    args = message.text.split(None, 2)
+
+    if len(args) < 3:
+        await message.reply("Invalid Parameter..", quote=True)
+        return
+
+    new_field = str(args[1]).lower()
+
+    if str(args[2]).lower() == 'true':
+        update = True
+    else:
+        update = False
+
+    status = await rename_db.update_all(new_field, update)
+
+    try:
+        if status:
+            await message.reply(f"Successfully Updated New Default Value '{args[1]}'..", quote=True)
+            return
+        else:
+            await message.reply(f"Something Went Wrong..", quote=True)
+            return
+    except Exception as e:
+        await message.reply(f"While Update New Default Value Got An Error {str(e)}..", quote=True)
+        return
+
+
+@Client.on_message(filters.command("settings"))
+async def settings(bot, message):
+    id = int(message.from_user.id)
+    if not await rename_db.is_user_exist(message.from_user.id):
+        await rename_db.add_user(message.from_user.id, message.from_user.first_name)
+        await bot.send_message(Config.LOG_CHANNEL,
+                               script.LOG_TEXT_P.format(message.from_user.id, message.from_user.mention))
+
+    ban_user = await rename_db.get_ban_status(message.from_user.id)
+
+    if ban_user['is_banned']:
+        await message.reply_text("You are B A N N E D")
+        return
+
+    doc, update = await rename_db.get_user_by_id(message.from_user.id)
+
+    if doc:
+        upload_type = "Upload As File 📁"
+    else:
+        upload_type = "Upload As Video 🎞"
+
+    if update:
+        update_type = "Bot Updates: ON 🤖"
+    else:
+        update_type = "Bot Updates: OFF 🤖"
+
+    buttons = [
+        [
+            InlineKeyboardButton(upload_type, callback_data="upload"),
+            InlineKeyboardButton(update_type, callback_data="update")
+        ],
+        [
+            InlineKeyboardButton("Show Thumbnail 🌌", callback_data="thumbnail"),
+            InlineKeyboardButton('Home ⚡', callback_data="start")
+        ]
+    ]
+
+    reply_markup = InlineKeyboardMarkup(buttons)
+
+    await message.reply_text(
+        text="<b>Change My Settings As Your Wish ⚙</b>",
+        reply_markup=reply_markup,
+        disable_web_page_preview=True,
+        reply_to_message_id=message.id
+    )
+
+
 @Client.on_message(
     filters.private & (filters.document | filters.video | filters.audio | filters.voice | filters.video_note))
 async def rename_cb(bot, update):

@@ -9,11 +9,13 @@ class Database:
         self.db = self._client[database_name]
         self.rename = self.db.Rename
 
-    def new_user(self, id, name, fileid):
+    def new_user(self, id, name, fileid, document, update):
         return dict(
             id=id,
             name=name,
             file_id=fileid,
+            doc=document,
+            update=update,
             ban_status=dict(
                 is_banned=False,
                 ban_reason="",
@@ -24,7 +26,7 @@ class Database:
         if self.rename.find_one({'id': int(id)}):
             self.rename.delete_one({'id': int(id)})
 
-        user = self.new_user(id, name, None)
+        user = self.new_user(id, name, None, True, True)
         self.rename.insert_one(user)
 
     async def is_user_exist(self, id):
@@ -59,6 +61,17 @@ class Database:
             return default
         return user.get('ban_status', default)
 
+    async def get_user_by_id(self, id):
+        try:
+            user = self.rename.find_one({'id': int(id)})
+
+            if not user:
+                return True, True
+            else:
+                return user['doc'], user['update']
+        except:
+            return True, True
+
     async def get_all_users(self):
         return self.rename.find({})
 
@@ -77,7 +90,7 @@ class Database:
             user = self.rename.find_one({'id': int(user_id)})
 
             if not user:
-                user = self.new_user(int(user_id), name, '')
+                user = self.new_user(int(user_id), name, '', True, True)
                 self.rename.insert_one(user)
 
             self.rename.update_one({'id': user_id}, {'$set': {'file_id': file_id}})
@@ -95,6 +108,20 @@ class Database:
                 return user['file_id']
         except:
             return None
+
+    async def update_all(self, new_field, value):
+        try:
+            self.rename.update_many({}, {'$set': {f'{new_field}': value}}, upsert=False, array_filters=None)
+            return True
+        except Exception as e:
+            return False
+
+    async def update_by_id(self, user_id, new_field, value):
+        try:
+            self.rename.update_one({'id': int(user_id)}, {'$set': {f'{new_field}': value}})
+            return True
+        except Exception as e:
+            return False
 
 
 rename_db = Database(Config.DB_URI, 'UFSBOTZ')
