@@ -126,13 +126,13 @@ async def cb_handler(bot, update):
             d_thumb = await rename_db.get_thumb(update.from_user.id)
 
             if d_thumb is not None:
-                await update.message.send_photo(
+                await bot.send_photo(
                     chat_id=update.message.chat.id,
                     photo=d_thumb,
                     reply_to_message_id=update.message.id
                 )
             else:
-                await update.message.send_message(
+                await bot.send_message(
                     chat_id=update.message.chat.id,
                     text="You Are Not To Set Your Default Thumbnail...",
                     reply_to_message_id=update.message.id
