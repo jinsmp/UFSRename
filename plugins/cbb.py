@@ -150,6 +150,5 @@ async def cb_handler(bot, update):
         reply_markup = InlineKeyboardMarkup(buttons)
         await update.message.edit_text(
             text=script.START_TEXT.format(update.from_user.first_name),
-            reply_to_message_id=update.id,
             reply_markup=reply_markup
         )

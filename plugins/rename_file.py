@@ -11,6 +11,7 @@ import pyrogram
 from PIL import Image
 from pyrogram.errors import FloodWait
 
+from helper_funcs.help_Nekmo_ffmpeg import take_screen_shot
 from helper_funcs.progress import Progress
 from script import script
 from pyrogram import Client, filters
@@ -127,54 +128,114 @@ async def rename_doc(bot, message, default):
                     sendmsg = await message.reply_text(script.UPLOAD_START, quote=True)
                 # logger.info(the_real_download_location)
 
-                thumb_image_path = download_location + str(media.from_user.id) + ".jpg"
+                # thumb_image_path = download_location + str(media.from_user.id) + ".jpg"
+                thumb_image = await rename_db.get_thumb(media.from_user.id)
+                g_doc, bot_up = await rename_db.get_user_by_id(media.from_user.id)
                 # d_thumb = await rename_db.get_thumb(media.from_user.id)
-                if not os.path.exists(thumb_image_path):
-                    # d_thumb = await rename_db.get_thumb(media.from_user.id)
-                    mes = await rename_db.get_thumb(media.from_user.id)
-                    if mes != None:
-                        await bot.download_media(message=mes, file_name=thumb_image_path)
-                        thumb_image_path = thumb_image_path
-                    else:
-                        thumb_image_path = None
+                # if not os.path.exists(thumb_image_path):
+                #     # d_thumb = await rename_db.get_thumb(media.from_user.id)
+                #     mes = await rename_db.get_thumb(media.from_user.id)
+                #     if mes != None:
+                #         await bot.download_media(message=mes, file_name=thumb_image_path)
+                #         thumb_image_path = thumb_image_path
+                #     else:
+                #         thumb_image_path = None
+                # else:
+                #     width = 0
+                #     height = 0
+                #     metadata = extractMetadata(createParser(thumb_image_path))
+                #     if metadata.has("width"):
+                #         width = metadata.get("width")
+                #     if metadata.has("height"):
+                #         height = metadata.get("height")
+                #     Image.open(thumb_image_path).convert("RGB").save(thumb_image_path)
+                #     img = Image.open(thumb_image_path)
+                #     img.resize((320, height))
+                #     img.save(thumb_image_path, "JPEG")
+
+                if thumb_image:
+                    d_thumb = thumb_image
                 else:
-                    width = 0
-                    height = 0
-                    metadata = extractMetadata(createParser(thumb_image_path))
-                    if metadata.has("width"):
-                        width = metadata.get("width")
-                    if metadata.has("height"):
-                        height = metadata.get("height")
-                    Image.open(thumb_image_path).convert("RGB").save(thumb_image_path)
-                    img = Image.open(thumb_image_path)
-                    img.resize((320, height))
-                    img.save(thumb_image_path, "JPEG")
+                    d_thumb = None
 
                 c_time = time.time()
                 prog = Progress(media.from_user.id, bot, sendmsg)
-                sent_message = await bot.send_document(
-                    chat_id=message.chat.id,
-                    document=new_file_name,
-                    thumb=thumb_image_path,
-                    caption=description,
-                    # reply_markup=reply_markup,
-                    reply_to_message_id=media.id,
-                    progress=prog.progress_for_pyrogram,
-                    progress_args=(
-                        f"**• Uploading 📤 :** `{file_name }.{extension}`",
-                        c_time,
+                if g_doc:
+                    sent_message = await bot.send_document(
+                        chat_id=message.chat.id,
+                        document=new_file_name,
+                        thumb=d_thumb,
+                        caption=description,
+                        # reply_markup=reply_markup,
+                        reply_to_message_id=media.id,
+                        progress=prog.progress_for_pyrogram,
+                        progress_args=(
+                            f"**• Uploading 📤 :** `{file_name }.{extension}`",
+                            c_time,
+                        )
                     )
-                )
-                if message.id != sendmsg.id:
-                    try:
-                        await sendmsg.delete()
-                    except FloodWait as gf:
-                        time.sleep(gf.x)
-                    except Exception as rr:
-                        logging.warning(str(rr))
-                os.remove(new_file_name)
-                if thumb_image_path is not None:
-                    os.remove(thumb_image_path)
+                    if message.id != sendmsg.id:
+                        try:
+                            await sendmsg.delete()
+                        except FloodWait as gf:
+                            time.sleep(gf.x)
+                        except Exception as rr:
+                            logging.warning(str(rr))
+                    os.remove(new_file_name)
+                # if thumb_image_path is not None:
+                #     os.remove(thumb_image_path)
+                else:
+                    if actual_name.upper().endswith(
+                            ("MKV", "MP4", "WEBM", "FLV", "3GP", "AVI", "MOV", "OGG", "WMV", "M4V",
+                             "TS", "MPG", "MTS", "M2TS")):
+                        duration = 0
+                        try:
+                            metadata = extractMetadata(createParser(new_file_name))
+                            if metadata.has("duration"):
+                                duration = metadata.get("duration").seconds
+                        except Exception as g_e:
+                            logging.info(g_e)
+                        width = 0
+                        height = 0
+                        d_thumb = None
+
+                        if not thumb_image:
+                            logging.info("Taking Screenshot..")
+                            d_thumb = await take_screen_shot(
+                                new_file_name,
+                                os.path.dirname(os.path.abspath(new_file_name)),
+                                (duration / 2),
+                            )
+                        else:
+                            d_thumb = thumb_image
+
+                        sent_message = await message.reply_video(
+                            video=new_file_name,
+                            caption=description,
+                            duration=duration,
+                            width=width,
+                            height=height,
+                            thumb=d_thumb,
+                            supports_streaming=True,
+                            disable_notification=True,
+                            reply_to_message_id=media.id,
+                            progress=prog.progress_for_pyrogram,
+                            progress_args=(
+                                f"**• Uploading 📤 :** `{file_name }.{extension}`",
+                                c_time,
+                            ),
+                        )
+                        if message.id != sendmsg.id:
+                            try:
+                                await sendmsg.delete()
+                            except FloodWait as gf:
+                                time.sleep(gf.x)
+                            except Exception as rr:
+                                logging.warning(str(rr))
+                        os.remove(new_file_name)
+
+                        # if thumb_image_path is not None:
+                        #     os.remove(thumb_image_path)
 
                 if media.from_user.id not in Config.ADMINS:
                     try:
