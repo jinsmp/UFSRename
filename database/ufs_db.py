@@ -73,7 +73,11 @@ class Database:
             return True, True
 
     async def get_all_users(self):
-        return self.rename.find({})
+        try:
+            users = list(self.rename.find({}))
+            return users
+        finally:
+            pass
 
     async def delete_user(self, user_id):
         self.rename.delete_many({'id': int(user_id)})

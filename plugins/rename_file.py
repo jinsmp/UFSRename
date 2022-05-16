@@ -3,6 +3,7 @@
 # (c) Jins Mathew | UFSBotz
 
 import os
+import random
 import time
 import asyncio
 import logging
@@ -13,6 +14,7 @@ from pyrogram.errors import FloodWait
 
 from helper_funcs.help_Nekmo_ffmpeg import take_screen_shot
 from helper_funcs.progress import Progress
+from helper_funcs.thumbnail_fixation import fix_thumb
 from script import script
 from pyrogram import Client, filters
 from database.ufs_db import rename_db
@@ -142,32 +144,12 @@ async def rename_doc(bot, message, default):
                 else:
                     thumb_image = thumb_image_path
 
-                # d_thumb = await rename_db.get_thumb(media.from_user.id)
-                # if not os.path.exists(thumb_image_path):
-                #     # d_thumb = await rename_db.get_thumb(media.from_user.id)
-                #     mes = await rename_db.get_thumb(media.from_user.id)
-                #     if mes != None:
-                #         await bot.download_media(message=mes, file_name=thumb_image_path)
-                #         thumb_image_path = thumb_image_path
-                #     else:
-                #         thumb_image_path = None
-                # else:
-                #     width = 0
-                #     height = 0
-                #     metadata = extractMetadata(createParser(thumb_image_path))
-                #     if metadata.has("width"):
-                #         width = metadata.get("width")
-                #     if metadata.has("height"):
-                #         height = metadata.get("height")
-                #     Image.open(thumb_image_path).convert("RGB").save(thumb_image_path)
-                #     img = Image.open(thumb_image_path)
-                #     img.resize((320, height))
-                #     img.save(thumb_image_path, "JPEG")
-
                 if thumb_image:
                     d_thumb = thumb_image
                 else:
                     d_thumb = None
+
+                width, height, d_thumb = await fix_thumb(d_thumb)
 
                 c_time = time.time()
                 prog = Progress(media.from_user.id, bot, sendmsg)
@@ -212,13 +194,16 @@ async def rename_doc(bot, message, default):
 
                         if not thumb_image:
                             logging.info("Taking Screenshot..")
-                            d_thumb = await take_screen_shot(
-                                new_file_name,
-                                os.path.dirname(os.path.abspath(new_file_name)),
-                                (duration / 2),
-                            )
+                            try:
+                                d_thumb = await take_screen_shot(new_file_name, os.path.dirname(
+                                    os.path.abspath(new_file_name)), random.randint(0, duration - 1))
+                            except Exception as e:
+                                logger.error(e)
+                                d_thumb = None
                         else:
                             d_thumb = thumb_image
+
+                        width, height, d_thumb = await fix_thumb(d_thumb)
 
                         sent_message = await message.reply_video(
                             video=new_file_name,
