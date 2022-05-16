@@ -221,10 +221,10 @@ async def broadcast(bot, message):
     ub = 0
 
     success = 0
+    text, data_type, content, buttons = get_msg_type(b_msg)
     for user in all_users:
-        text, data_type, content, buttons = get_msg_type(b_msg)
         i += 1
-        if not user['id'] in Config.ADMINS:
+        if user['id'] in Config.ADMINS and user['update']:
             try:
                 await sts.edit_text(f"**Broadcast Successfully Completed** `{i}/{total_users}`"
                                     f"\n**Total Blocked By User** `{b}`"

@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
 
-@Client.on_message(filters.photo)
+@Client.on_message(filters.photo & ~filters.bot)
 async def save_photo(bot, update):
     BANNED_USERS = await rename_db.get_banned()
 

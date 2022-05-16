@@ -74,7 +74,7 @@ def get_msg_type(msg):
         # data_type = Types.PHOTO
 
         # offset = len(args[1]) - len(msg.text)  # set correct offset relative to command + notename
-        text, buttons = button_markdown_parser(msg.caption, entities=msg.entities)
+        text, buttons = button_markdown_parser(msg.caption, entities=msg.caption_entities)
         if buttons:
             data_type = Types.BUTTON_PHOTO
         else:
@@ -155,32 +155,44 @@ def markdown_parser(txt: str, entities: Dict[MessageEntity, str] = None, offset:
         end = ent.offset + offset + ent.length - 1  # end of entity
 
         # we only care about bold, code, url, text links
-        if ent.type in ("bold", "code", "url", "text_link"):
+        if str(ent.type.name) in ("BOLD", "PRE", "URL", "ITALIC", "UNDERLINE", "SPOILER", "TEXT_LINK"):
             # count emoji to switch counter
             count = _calc_emoji_offset(txt[:start])
             start -= count
             end -= count
 
             # URL handling -> do not escape if in [](), escape otherwise.
-            if ent.type == "url":
-                if any(match.start(1) <= start and end <= match.end(1) for match in LINK_REGEX.finditer(txt)):
+            if str(ent.type.name) == "URL":
+                if any(match.start(1) <= start and end <= match.end(1) for match in LINK_REGEX.finditer(txt[start:end])):
                     continue
                 # else, check the escapes between the prev and last and forcefully escape the url to avoid mangling
                 else:
                     # TODO: investigate possible offset bug when lots of emoji are present
-                    res += _selective_escape(txt[prev:start] or "") + escape_markdown(txt)
+                    res += _selective_escape(txt[prev:start] or "") + escape_markdown(txt[start:end])
 
             # code handling
-            elif ent.type == "code":
-                res += _selective_escape(txt[prev:start]) + '`' + txt + '`'
+            elif str(ent.type.name) == "PRE":
+                res += _selective_escape(txt[prev:start]) + '`' + txt[start:end] + '`'
 
-            # code handling
-            elif ent.type == "bold":
-                res += _selective_escape(txt[prev:start]) + '`' + txt + '`'
+            # bold handling
+            elif str(ent.type.name) == "BOLD":
+                res += _selective_escape(txt[prev:start]) + '**' + txt[start:end] + '**'
+
+            # italic handling
+            elif str(ent.type.name) == "ITALIC":
+                res += _selective_escape(txt[prev:start]) + '__' + txt[start:end] + '__'
+
+            # underline handling
+            elif str(ent.type.name) == "UNDERLINE":
+                res += _selective_escape(txt[prev:start]) + '--' + txt[start:end] + '--'
+
+            # spoiler handling
+            elif str(ent.type.name) == "SPOILER":
+                res += _selective_escape(txt[prev:start]) + '||' + txt[start:end] + '||'
 
             # handle markdown/html links
-            elif ent.type == "text_link":
-                res += _selective_escape(txt[prev:start]) + "[{}]({})".format(txt, ent.url)
+            elif str(ent.type.name) == "TEXT_LINK":
+                res += _selective_escape(txt[prev:start]) + "[{}]({})".format(txt[start:end], ent.url)
 
             end += 1
 
