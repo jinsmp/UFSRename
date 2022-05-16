@@ -80,7 +80,7 @@ async def delete_thumbnail(bot, update):
     thumb_image_path = Config.DOWNLOAD_LOCATION + "/" + str(update.from_user.id) + ".jpg"
     
     try:
-        status = await rename_db.update_thumb(update.from_user.id, update.from_user.first_name, '')
+        status = await rename_db.update_thumb(update.from_user.id, update.from_user.first_name, None)
     except:
         pass
     try:

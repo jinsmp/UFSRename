@@ -121,16 +121,27 @@ async def rename_doc(bot, message, default):
                 os.rename(the_real_download_location, new_file_name)
                 try:
                     await sendmsg.edit_text(
-                        text="**Status :** `Upload Starting 📤`\n\n**• FileName :** `{}`".format(file_name + "." + extension)
+                        text="**Status :** `Upload Starting 📤`\n\n**• FileName :** `{}`".format(
+                            file_name + "." + extension)
                     )
                 except Exception as e:
                     await sendmsg.delete()
                     sendmsg = await message.reply_text(script.UPLOAD_START, quote=True)
                 # logger.info(the_real_download_location)
 
-                # thumb_image_path = download_location + str(media.from_user.id) + ".jpg"
+                thumb_image_path = download_location + str(media.from_user.id) + ".jpg"
                 thumb_image = await rename_db.get_thumb(media.from_user.id)
                 g_doc, bot_up = await rename_db.get_user_by_id(media.from_user.id)
+
+                if not os.path.exists(thumb_image_path):
+                    if thumb_image is not None:
+                        await bot.download_media(message=thumb_image, file_name=thumb_image_path)
+                        thumb_image = thumb_image_path
+                    else:
+                        thumb_image = None
+                else:
+                    thumb_image = thumb_image_path
+
                 # d_thumb = await rename_db.get_thumb(media.from_user.id)
                 # if not os.path.exists(thumb_image_path):
                 #     # d_thumb = await rename_db.get_thumb(media.from_user.id)
@@ -170,7 +181,7 @@ async def rename_doc(bot, message, default):
                         reply_to_message_id=media.id,
                         progress=prog.progress_for_pyrogram,
                         progress_args=(
-                            f"**• Uploading 📤 :** `{file_name }.{extension}`",
+                            f"**• Uploading 📤 :** `{file_name}.{extension}`",
                             c_time,
                         )
                     )
@@ -182,8 +193,8 @@ async def rename_doc(bot, message, default):
                         except Exception as rr:
                             logging.warning(str(rr))
                     os.remove(new_file_name)
-                # if thumb_image_path is not None:
-                #     os.remove(thumb_image_path)
+                    if thumb_image_path is not None:
+                        os.remove(thumb_image_path)
                 else:
                     if actual_name.upper().endswith(
                             ("MKV", "MP4", "WEBM", "FLV", "3GP", "AVI", "MOV", "OGG", "WMV", "M4V",
@@ -221,7 +232,7 @@ async def rename_doc(bot, message, default):
                             reply_to_message_id=media.id,
                             progress=prog.progress_for_pyrogram,
                             progress_args=(
-                                f"**• Uploading 📤 :** `{file_name }.{extension}`",
+                                f"**• Uploading 📤 :** `{file_name}.{extension}`",
                                 c_time,
                             ),
                         )
@@ -234,8 +245,8 @@ async def rename_doc(bot, message, default):
                                 logging.warning(str(rr))
                         os.remove(new_file_name)
 
-                        # if thumb_image_path is not None:
-                        #     os.remove(thumb_image_path)
+                        if thumb_image_path is not None:
+                            os.remove(thumb_image_path)
 
                 if media.from_user.id not in Config.ADMINS:
                     try:
